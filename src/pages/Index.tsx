@@ -1,4 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useStaffSession } from "@/contexts/StaffSessionContext";
+import StaffSignIn from "@/pages/StaffSignIn";
 import BookRide from "@/components/tabs/BookRide";
 import WaitingList from "@/components/tabs/WaitingList";
 import LiveFeed from "@/components/tabs/LiveFeed";
@@ -8,19 +11,31 @@ import CustomerTracker from "@/components/tabs/CustomerTracker";
 import AdminPanel from "@/components/tabs/AdminPanel";
 
 const Index = () => {
+  const { session, signOut } = useStaffSession();
+
+  if (!session) return <StaffSignIn />;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border p-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-4xl text-gradient">KEEP IT REET</h1>
             <p className="text-muted-foreground text-sm font-sans tracking-wide">PRO RIDES MANAGEMENT</p>
           </div>
+          <div className="text-right flex items-center gap-3">
+            <div className="text-sm">
+              <span className="text-muted-foreground">Staff:</span>{" "}
+              <span className="text-foreground font-semibold">{session.staffName}</span>
+              <br />
+              <span className="text-muted-foreground">Event:</span>{" "}
+              <span className="text-foreground font-semibold">{session.eventName}</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={signOut}>Sign Out</Button>
+          </div>
         </div>
       </header>
 
-      {/* Dashboard */}
       <main className="max-w-5xl mx-auto p-4">
         <Tabs defaultValue="book" className="w-full">
           <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
