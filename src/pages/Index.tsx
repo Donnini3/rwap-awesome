@@ -20,8 +20,8 @@ const Index = () => {
       <header className="border-b border-border p-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-4xl text-gradient">KEEP IT REET</h1>
-            <p className="text-muted-foreground text-sm font-sans tracking-wide">PRO RIDES MANAGEMENT</p>
+            <h1 className="text-4xl text-gradient" style={{ fontFamily: "'Yellowtail', cursive" }}>Keep it Reet</h1>
+            <p className="text-muted-foreground text-sm font-sans tracking-wide uppercase">KIR Event Management</p>
           </div>
           <div className="text-right flex items-center gap-3">
             <div className="text-sm">
