@@ -25,8 +25,8 @@ const StaffSignIn = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-border glow-magenta">
         <CardHeader className="text-center">
-          <h1 className="text-5xl text-gradient mb-2">KEEP IT REET</h1>
-          <p className="text-muted-foreground text-sm tracking-wide">PRO RIDES MANAGEMENT</p>
+          <h1 className="text-5xl text-gradient mb-2" style={{ fontFamily: "'Yellowtail', cursive" }}>Keep it Reet</h1>
+          <p className="text-muted-foreground text-sm tracking-wide uppercase">KIR Event Management</p>
           <CardTitle className="text-xl mt-4">Staff Sign In</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

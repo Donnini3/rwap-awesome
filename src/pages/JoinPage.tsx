@@ -54,7 +54,7 @@ const JoinPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-border glow-magenta">
         <CardHeader className="text-center">
-          <h1 className="text-4xl text-gradient">KEEP IT REET</h1>
+          <h1 className="text-4xl text-gradient" style={{ fontFamily: "'Yellowtail', cursive" }}>Keep it Reet</h1>
           <CardTitle className="text-xl text-foreground">Join the Waiting List</CardTitle>
           <p className="text-muted-foreground text-sm">Sign up for a pro ride experience!</p>
         </CardHeader>
