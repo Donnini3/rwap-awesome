@@ -1,12 +1,49 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BookRide from "@/components/tabs/BookRide";
+import WaitingList from "@/components/tabs/WaitingList";
+import LiveFeed from "@/components/tabs/LiveFeed";
+import Stats from "@/components/tabs/Stats";
+import Leaderboard from "@/components/tabs/Leaderboard";
+import CustomerTracker from "@/components/tabs/CustomerTracker";
+import AdminPanel from "@/components/tabs/AdminPanel";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border p-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl text-gradient">KEEP IT REET</h1>
+            <p className="text-muted-foreground text-sm font-sans tracking-wide">PRO RIDES MANAGEMENT</p>
+          </div>
+        </div>
+      </header>
+
+      {/* Dashboard */}
+      <main className="max-w-5xl mx-auto p-4">
+        <Tabs defaultValue="book" className="w-full">
+          <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+            <TabsTrigger value="book" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">🏁 Book</TabsTrigger>
+            <TabsTrigger value="waitlist" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">📋 Waitlist</TabsTrigger>
+            <TabsTrigger value="feed" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">📡 Feed</TabsTrigger>
+            <TabsTrigger value="stats" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">📊 Stats</TabsTrigger>
+            <TabsTrigger value="leaderboard" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">🚗 Drivers</TabsTrigger>
+            <TabsTrigger value="customers" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">👥 Customers</TabsTrigger>
+            <TabsTrigger value="admin" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">⚙️ Admin</TabsTrigger>
+          </TabsList>
+
+          <div className="mt-4">
+            <TabsContent value="book"><BookRide /></TabsContent>
+            <TabsContent value="waitlist"><WaitingList /></TabsContent>
+            <TabsContent value="feed"><LiveFeed /></TabsContent>
+            <TabsContent value="stats"><Stats /></TabsContent>
+            <TabsContent value="leaderboard"><Leaderboard /></TabsContent>
+            <TabsContent value="customers"><CustomerTracker /></TabsContent>
+            <TabsContent value="admin"><AdminPanel /></TabsContent>
+          </div>
+        </Tabs>
+      </main>
     </div>
   );
 };
