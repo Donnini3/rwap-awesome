@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useDrivers } from "@/hooks/useDrivers";
-import { useEvents } from "@/hooks/useEvents";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useRides } from "@/hooks/useRides";
+import { useStaffSession } from "@/contexts/StaffSessionContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,15 +11,13 @@ import { toast } from "sonner";
 
 const BookRide = () => {
   const { data: drivers } = useDrivers();
-  const { data: events } = useEvents();
   const { data: customers } = useCustomers();
   const { addRide } = useRides();
-  const { addCustomer, updateCustomerStatus } = useCustomers();
+  const { updateCustomerStatus } = useCustomers();
+  const { session } = useStaffSession();
 
-  const [eventId, setEventId] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [driverId, setDriverId] = useState("");
-  const [staffName, setStaffName] = useState("");
   const [notes, setNotes] = useState("");
   const [useNew, setUseNew] = useState(false);
   const [newFirst, setNewFirst] = useState("");
@@ -28,10 +26,8 @@ const BookRide = () => {
   const waitingCustomers = customers?.filter((c) => c.status === "waiting") ?? [];
 
   const handleSubmit = async () => {
-    if (!eventId || !driverId || !staffName) {
-      toast.error("Please fill in event, driver, and staff name");
-      return;
-    }
+    if (!session) { toast.error("Please sign in first"); return; }
+    if (!driverId) { toast.error("Please select a driver"); return; }
 
     let cid = customerId;
     if (useNew) {
@@ -51,7 +47,13 @@ const BookRide = () => {
     }
 
     try {
-      await addRide.mutateAsync({ customer_id: cid, driver_id: driverId, event_id: eventId, staff_name: staffName, notes });
+      await addRide.mutateAsync({
+        customer_id: cid,
+        driver_id: driverId,
+        event_id: session.eventId,
+        staff_name: session.staffName,
+        notes,
+      });
       toast.success("Ride booked! 🏁");
       setCustomerId(""); setDriverId(""); setNotes(""); setNewFirst(""); setNewLast("");
     } catch { toast.error("Failed to book ride"); }
@@ -61,16 +63,13 @@ const BookRide = () => {
     <Card className="border-border glow-magenta">
       <CardHeader>
         <CardTitle className="text-gradient text-3xl">🏁 Book a Ride</CardTitle>
+        {session && (
+          <p className="text-sm text-muted-foreground">
+            Staff: <span className="text-foreground font-semibold">{session.staffName}</span> · Event: <span className="text-foreground font-semibold">{session.eventName}</span>
+          </p>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <label className="text-sm text-muted-foreground mb-1 block">Event</label>
-          <Select value={eventId} onValueChange={setEventId}>
-            <SelectTrigger><SelectValue placeholder="Select event..." /></SelectTrigger>
-            <SelectContent>{events?.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
-
         <div>
           <label className="text-sm text-muted-foreground mb-1 block">Customer</label>
           <div className="flex gap-2 mb-2">
@@ -96,11 +95,6 @@ const BookRide = () => {
             <SelectTrigger><SelectValue placeholder="Select driver..." /></SelectTrigger>
             <SelectContent>{drivers?.map((d) => <SelectItem key={d.id} value={d.id}>{d.name} — {d.car}</SelectItem>)}</SelectContent>
           </Select>
-        </div>
-
-        <div>
-          <label className="text-sm text-muted-foreground mb-1 block">Staff Name</label>
-          <Input placeholder="Your name" value={staffName} onChange={(e) => setStaffName(e.target.value)} />
         </div>
 
         <div>
