@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useStaffSession } from "@/contexts/StaffSessionContext";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { format } from "date-fns";
 import StaffSignIn from "@/pages/StaffSignIn";
 import BookRide from "@/components/tabs/BookRide";
 import WaitingList from "@/components/tabs/WaitingList";
