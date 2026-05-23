@@ -31,42 +31,44 @@ const WaitingList = () => {
           <CardTitle className="text-gradient text-3xl">📋 Waiting List</CardTitle>
           <p className="text-muted-foreground text-sm">{customers?.filter(c => c.status === "waiting").length ?? 0} waiting</p>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden sm:table-cell">Phone</TableHead>
-                <TableHead className="hidden sm:table-cell">Age</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {customers?.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium">{c.first_name} {c.last_name}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{c.phone}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{c.age_group}</TableCell>
-                  <TableCell>
-                    <Badge variant={c.status === "waiting" ? "default" : "secondary"}>
-                      {c.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="space-x-1">
-                    {c.status === "waiting" && (
-                      <Button size="sm" variant="outline" onClick={() => updateCustomerStatus.mutate({ id: c.id, status: "booked" })}>
-                        ✅
-                      </Button>
-                    )}
-                    <Button size="sm" variant="ghost" onClick={() => { deleteCustomer.mutate(c.id); toast.success("Removed"); }}>
-                      ❌
-                    </Button>
-                  </TableCell>
+        <CardContent className="px-2 sm:px-6">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="hidden sm:table-cell">Phone</TableHead>
+                  <TableHead className="hidden sm:table-cell">Age</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {customers?.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-medium">{c.first_name} {c.last_name}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{c.phone}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{c.age_group}</TableCell>
+                    <TableCell>
+                      <Badge variant={c.status === "waiting" ? "default" : "secondary"}>
+                        {c.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="space-x-1 whitespace-nowrap">
+                      {c.status === "waiting" && (
+                        <Button size="sm" variant="outline" onClick={() => updateCustomerStatus.mutate({ id: c.id, status: "booked" })}>
+                          ✅
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" onClick={() => { deleteCustomer.mutate(c.id); toast.success("Removed"); }}>
+                        ❌
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

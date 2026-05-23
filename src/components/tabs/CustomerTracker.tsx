@@ -17,27 +17,29 @@ const CustomerTracker = () => {
       <CardHeader>
         <CardTitle className="text-gradient text-3xl">👥 Customer Tracker</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden sm:table-cell">Email</TableHead>
-              <TableHead className="hidden sm:table-cell">Phone</TableHead>
-              <TableHead>Rides</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {customerData.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.first_name} {c.last_name}</TableCell>
-                <TableCell className="hidden sm:table-cell text-muted-foreground">{c.email}</TableCell>
-                <TableCell className="hidden sm:table-cell text-muted-foreground">{c.phone}</TableCell>
-                <TableCell className="font-bold text-secondary">{c.rideCount}</TableCell>
+      <CardContent className="px-2 sm:px-6">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="hidden sm:table-cell">Email</TableHead>
+                <TableHead className="hidden sm:table-cell">Phone</TableHead>
+                <TableHead>Rides</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {customerData.map((c) => (
+                <TableRow key={c.id}>
+                  <TableCell className="font-medium">{c.first_name} {c.last_name}</TableCell>
+                  <TableCell className="hidden sm:table-cell text-muted-foreground">{c.email}</TableCell>
+                  <TableCell className="hidden sm:table-cell text-muted-foreground">{c.phone}</TableCell>
+                  <TableCell className="font-bold text-secondary">{c.rideCount}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
