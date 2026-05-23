@@ -3,9 +3,11 @@ import { useDrivers } from "@/hooks/useDrivers";
 import { useEvents } from "@/hooks/useEvents";
 import { useRides } from "@/hooks/useRides";
 import { useCustomers } from "@/hooks/useCustomers";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +17,8 @@ const AdminPanel = () => {
   const { data: events, addEvent, deleteEvent } = useEvents();
   const { clearAllRides } = useRides();
   const { addCustomer } = useCustomers();
+  const { data: activeEvent, setActiveEvent } = useActiveEvent();
+  const activeEventId = activeEvent?.active_event_id ?? "";
 
   const [driverName, setDriverName] = useState("");
   const [driverCar, setDriverCar] = useState("");
@@ -80,6 +84,29 @@ const AdminPanel = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-gradient text-3xl font-bold">⚙️ Admin Panel</h2>
+
+      {/* Active Event */}
+      <Card className="border-border glow-cyan">
+        <CardHeader><CardTitle>Active Event (site-wide)</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            This event applies to every staff member. The date of each ride is recorded automatically as the day it was logged.
+          </p>
+          <Select
+            value={activeEventId}
+            onValueChange={(v) => setActiveEvent.mutate(v, {
+              onSuccess: () => toast.success("Active event updated"),
+              onError: () => toast.error("Failed to update active event"),
+            })}
+          >
+            <SelectTrigger className="h-12 text-lg"><SelectValue placeholder="Select active event..." /></SelectTrigger>
+            <SelectContent>
+              {events?.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
 
       {/* Add Driver */}
       <Card className="border-border">
