@@ -17,35 +17,32 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border p-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl text-gradient" style={{ fontFamily: "'Yellowtail', cursive" }}>Keep it Reet</h1>
-            <p className="text-muted-foreground text-sm font-sans tracking-wide uppercase">KIR Event Management</p>
+      <header className="border-b border-border p-3 sm:p-4">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl sm:text-4xl text-gradient leading-tight" style={{ fontFamily: "'Yellowtail', cursive" }}>Keep it Reet</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm font-sans tracking-wide uppercase">KIR Event Management</p>
           </div>
-          <div className="text-right flex items-center gap-3">
-            <div className="text-sm">
-              <span className="text-muted-foreground">Staff:</span>{" "}
-              <span className="text-foreground font-semibold">{session.staffName}</span>
-              <br />
-              <span className="text-muted-foreground">Event:</span>{" "}
-              <span className="text-foreground font-semibold">{session.eventName}</span>
+          <div className="flex items-center justify-between sm:justify-end gap-3">
+            <div className="text-xs sm:text-sm leading-tight">
+              <div><span className="text-muted-foreground">Staff:</span>{" "}<span className="text-foreground font-semibold">{session.staffName}</span></div>
+              <div><span className="text-muted-foreground">Event:</span>{" "}<span className="text-foreground font-semibold">{session.eventName}</span></div>
             </div>
             <Button variant="outline" size="sm" onClick={signOut}>Sign Out</Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto p-4">
+      <main className="max-w-5xl mx-auto p-3 sm:p-4 pb-20">
         <Tabs defaultValue="book" className="w-full">
-          <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
-            <TabsTrigger value="book" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">🏁 Book</TabsTrigger>
-            <TabsTrigger value="waitlist" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">📋 Waitlist</TabsTrigger>
-            <TabsTrigger value="feed" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">📡 Feed</TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">📊 Stats</TabsTrigger>
-            <TabsTrigger value="leaderboard" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">🚗 Drivers</TabsTrigger>
-            <TabsTrigger value="customers" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">👥 Customers</TabsTrigger>
-            <TabsTrigger value="admin" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">⚙️ Admin</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-4 sm:grid-cols-7 h-auto gap-1 bg-muted/50 p-1">
+            <TabsTrigger value="book" className="flex-col gap-0.5 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><span className="text-base sm:hidden">🏁</span><span>Book</span></TabsTrigger>
+            <TabsTrigger value="waitlist" className="flex-col gap-0.5 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><span className="text-base sm:hidden">📋</span><span>Waitlist</span></TabsTrigger>
+            <TabsTrigger value="feed" className="flex-col gap-0.5 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><span className="text-base sm:hidden">📡</span><span>Feed</span></TabsTrigger>
+            <TabsTrigger value="stats" className="flex-col gap-0.5 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><span className="text-base sm:hidden">📊</span><span>Stats</span></TabsTrigger>
+            <TabsTrigger value="leaderboard" className="flex-col gap-0.5 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><span className="text-base sm:hidden">🚗</span><span>Drivers</span></TabsTrigger>
+            <TabsTrigger value="customers" className="flex-col gap-0.5 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><span className="text-base sm:hidden">👥</span><span>People</span></TabsTrigger>
+            <TabsTrigger value="admin" className="flex-col gap-0.5 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground col-span-4 sm:col-span-1"><span className="text-base sm:hidden">⚙️</span><span>Admin</span></TabsTrigger>
           </TabsList>
 
           <div className="mt-4">
