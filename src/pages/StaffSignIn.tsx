@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useEvents } from "@/hooks/useEvents";
 import { useStaffSession } from "@/contexts/StaffSessionContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +13,43 @@ const StaffSignIn = () => {
   const { signIn } = useStaffSession();
   const [name, setName] = useState("");
   const [eventId, setEventId] = useState("");
+  const [passcode, setPasscode] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (!name.trim()) { toast.error("Enter your name"); return; }
     if (!eventId) { toast.error("Select an event"); return; }
-    const event = events?.find((e) => e.id === eventId);
-    signIn(name.trim(), eventId, event?.name ?? "");
-    toast.success(`Welcome, ${name.trim()}! 🏁`);
+    if (!passcode) { toast.error("Enter the staff passcode"); return; }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("staff-login", {
+        body: { passcode },
+      });
+      if (error || !data?.email) {
+        toast.error(data?.error ?? "Incorrect passcode");
+        setLoading(false);
+        return;
+      }
+
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+      if (authErr) {
+        toast.error("Sign-in failed");
+        setLoading(false);
+        return;
+      }
+
+      const event = events?.find((e) => e.id === eventId);
+      signIn(name.trim(), eventId, event?.name ?? "");
+      toast.success(`Welcome, ${name.trim()}! 🏁`);
+    } catch {
+      toast.error("Sign-in failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,7 +67,6 @@ const StaffSignIn = () => {
               placeholder="Enter your name..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
               className="text-lg h-12"
             />
           </div>
@@ -53,11 +83,23 @@ const StaffSignIn = () => {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Staff Passcode</label>
+            <Input
+              type="password"
+              placeholder="Enter passcode..."
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !loading && handleSignIn()}
+              className="text-lg h-12"
+            />
+          </div>
           <Button
+            disabled={loading}
             className="w-full gradient-magenta-cyan text-primary-foreground font-bold text-lg h-14 mt-2"
             onClick={handleSignIn}
           >
-            🏁 SIGN IN
+            {loading ? "Signing in..." : "🏁 SIGN IN"}
           </Button>
         </CardContent>
       </Card>

@@ -11,8 +11,9 @@ import CustomerTracker from "@/components/tabs/CustomerTracker";
 import AdminPanel from "@/components/tabs/AdminPanel";
 
 const Index = () => {
-  const { session, signOut } = useStaffSession();
+  const { session, authReady, signOut } = useStaffSession();
 
+  if (!authReady) return <div className="min-h-screen bg-background" />;
   if (!session) return <StaffSignIn />;
 
   return (
