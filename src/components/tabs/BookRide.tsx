@@ -3,11 +3,13 @@ import { useDrivers } from "@/hooks/useDrivers";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useRides } from "@/hooks/useRides";
 import { useStaffSession } from "@/contexts/StaffSessionContext";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 const BookRide = () => {
   const { data: drivers } = useDrivers();
@@ -15,6 +17,10 @@ const BookRide = () => {
   const { addRide } = useRides();
   const { updateCustomerStatus } = useCustomers();
   const { session } = useStaffSession();
+  const { data: activeEvent } = useActiveEvent();
+  const activeEventId = activeEvent?.active_event_id ?? null;
+  const activeEventName = (activeEvent?.events as { name?: string } | null)?.name ?? "No event set";
+  const todayLabel = format(new Date(), "EEE d MMM yyyy");
 
   const [customerId, setCustomerId] = useState("");
   const [driverId, setDriverId] = useState("");
@@ -27,6 +33,7 @@ const BookRide = () => {
 
   const handleSubmit = async () => {
     if (!session) { toast.error("Please sign in first"); return; }
+    if (!activeEventId) { toast.error("No active event set — ask admin to set one"); return; }
     if (!driverId) { toast.error("Please select a driver"); return; }
 
     let cid = customerId;
@@ -50,7 +57,7 @@ const BookRide = () => {
       await addRide.mutateAsync({
         customer_id: cid,
         driver_id: driverId,
-        event_id: session.eventId,
+        event_id: activeEventId,
         staff_name: session.staffName,
         notes,
       });
@@ -65,7 +72,7 @@ const BookRide = () => {
         <CardTitle className="text-gradient text-3xl">🏁 Book a Ride</CardTitle>
         {session && (
           <p className="text-sm text-muted-foreground">
-            Staff: <span className="text-foreground font-semibold">{session.staffName}</span> · Event: <span className="text-foreground font-semibold">{session.eventName}</span>
+            Staff: <span className="text-foreground font-semibold">{session.staffName}</span> · Event: <span className="text-foreground font-semibold">{activeEventName}</span> · <span className="text-foreground font-semibold">{todayLabel}</span>
           </p>
         )}
       </CardHeader>

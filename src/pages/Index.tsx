@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useStaffSession } from "@/contexts/StaffSessionContext";
+import { useActiveEvent } from "@/hooks/useActiveEvent";
+import { format } from "date-fns";
 import StaffSignIn from "@/pages/StaffSignIn";
 import BookRide from "@/components/tabs/BookRide";
 import WaitingList from "@/components/tabs/WaitingList";
@@ -12,6 +14,9 @@ import AdminPanel from "@/components/tabs/AdminPanel";
 
 const Index = () => {
   const { session, authReady, signOut } = useStaffSession();
+  const { data: activeEvent } = useActiveEvent();
+  const activeEventName = (activeEvent?.events as { name?: string } | null)?.name ?? "No event set";
+  const todayLabel = format(new Date(), "EEE d MMM yyyy");
 
   if (!authReady) return <div className="min-h-screen bg-background" />;
   if (!session) return <StaffSignIn />;
@@ -27,7 +32,8 @@ const Index = () => {
           <div className="flex items-center justify-between sm:justify-end gap-3">
             <div className="text-xs sm:text-sm leading-tight">
               <div><span className="text-muted-foreground">Staff:</span>{" "}<span className="text-foreground font-semibold">{session.staffName}</span></div>
-              <div><span className="text-muted-foreground">Event:</span>{" "}<span className="text-foreground font-semibold">{session.eventName}</span></div>
+              <div><span className="text-muted-foreground">Event:</span>{" "}<span className="text-foreground font-semibold">{activeEventName}</span></div>
+              <div><span className="text-muted-foreground">Date:</span>{" "}<span className="text-foreground font-semibold">{todayLabel}</span></div>
             </div>
             <Button variant="outline" size="sm" onClick={signOut}>Sign Out</Button>
           </div>

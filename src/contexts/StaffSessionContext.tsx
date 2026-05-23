@@ -3,14 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface StaffSession {
   staffName: string;
-  eventId: string;
-  eventName: string;
 }
 
 interface StaffSessionContextType {
   session: StaffSession | null;
   authReady: boolean;
-  signIn: (staffName: string, eventId: string, eventName: string) => void;
+  signIn: (staffName: string) => void;
   signOut: () => Promise<void>;
 }
 
@@ -34,7 +32,10 @@ export const StaffSessionProvider = ({ children }: { children: ReactNode }) => {
       if (authSession) {
         try {
           const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored) setSession(JSON.parse(stored));
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed?.staffName) setSession({ staffName: parsed.staffName });
+          }
         } catch { /* ignore */ }
       } else {
         localStorage.removeItem(STORAGE_KEY);
@@ -49,9 +50,7 @@ export const StaffSessionProvider = ({ children }: { children: ReactNode }) => {
     if (session) localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
   }, [session]);
 
-  const signIn = (staffName: string, eventId: string, eventName: string) => {
-    setSession({ staffName, eventId, eventName });
-  };
+  const signIn = (staffName: string) => setSession({ staffName });
 
   const signOut = async () => {
     await supabase.auth.signOut();

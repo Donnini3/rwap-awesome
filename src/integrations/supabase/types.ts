@@ -14,6 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          active_event_id: string | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          active_event_id?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          active_event_id?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_active_event_id_fkey"
+            columns: ["active_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           age_group: string
@@ -91,6 +117,7 @@ export type Database = {
           created_at: string
           customer_id: string
           driver_id: string
+          event_date: string
           event_id: string
           id: string
           notes: string | null
@@ -100,6 +127,7 @@ export type Database = {
           created_at?: string
           customer_id: string
           driver_id: string
+          event_date?: string
           event_id: string
           id?: string
           notes?: string | null
@@ -109,6 +137,7 @@ export type Database = {
           created_at?: string
           customer_id?: string
           driver_id?: string
+          event_date?: string
           event_id?: string
           id?: string
           notes?: string | null
