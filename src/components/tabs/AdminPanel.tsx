@@ -85,26 +85,28 @@ const AdminPanel = () => {
       <Card className="border-border">
         <CardHeader><CardTitle>Manage Drivers</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input placeholder="Driver Name" value={driverName} onChange={(e) => setDriverName(e.target.value)} />
             <Input placeholder="Car" value={driverCar} onChange={(e) => setDriverCar(e.target.value)} />
-            <Button onClick={handleAddDriver}>Add</Button>
+            <Button onClick={handleAddDriver} className="sm:w-auto">Add</Button>
           </div>
           <div>
             <label className="text-sm text-muted-foreground">Import CSV (Name, Car columns)</label>
             <Input type="file" accept=".csv" onChange={(e) => handleCSVUpload(e, "drivers")} />
           </div>
-          <Table>
-            <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Car</TableHead><TableHead></TableHead></TableRow></TableHeader>
-            <TableBody>
-              {drivers?.map((d) => (
-                <TableRow key={d.id}>
-                  <TableCell>{d.name}</TableCell><TableCell>{d.car}</TableCell>
-                  <TableCell><Button size="sm" variant="ghost" onClick={() => deleteDriver.mutate(d.id)}>❌</Button></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <Table>
+              <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Car</TableHead><TableHead></TableHead></TableRow></TableHeader>
+              <TableBody>
+                {drivers?.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell>{d.name}</TableCell><TableCell>{d.car}</TableCell>
+                    <TableCell><Button size="sm" variant="ghost" onClick={() => deleteDriver.mutate(d.id)}>❌</Button></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -112,21 +114,23 @@ const AdminPanel = () => {
       <Card className="border-border">
         <CardHeader><CardTitle>Manage Events</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input placeholder="Event Name" value={eventName} onChange={(e) => setEventName(e.target.value)} />
-            <Button onClick={handleAddEvent}>Add</Button>
+            <Button onClick={handleAddEvent} className="sm:w-auto">Add</Button>
           </div>
-          <Table>
-            <TableHeader><TableRow><TableHead>Event</TableHead><TableHead></TableHead></TableRow></TableHeader>
-            <TableBody>
-              {events?.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell>{e.name}</TableCell>
-                  <TableCell><Button size="sm" variant="ghost" onClick={() => deleteEvent.mutate(e.id)}>❌</Button></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <Table>
+              <TableHeader><TableRow><TableHead>Event</TableHead><TableHead></TableHead></TableRow></TableHeader>
+              <TableBody>
+                {events?.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell>{e.name}</TableCell>
+                    <TableCell><Button size="sm" variant="ghost" onClick={() => deleteEvent.mutate(e.id)}>❌</Button></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
