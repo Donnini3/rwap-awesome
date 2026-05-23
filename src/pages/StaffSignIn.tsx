@@ -1,24 +1,19 @@
 import { useState } from "react";
-import { useEvents } from "@/hooks/useEvents";
 import { useStaffSession } from "@/contexts/StaffSessionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 const StaffSignIn = () => {
-  const { data: events } = useEvents();
   const { signIn } = useStaffSession();
   const [name, setName] = useState("");
-  const [eventId, setEventId] = useState("");
   const [passcode, setPasscode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async () => {
     if (!name.trim()) { toast.error("Enter your name"); return; }
-    if (!eventId) { toast.error("Select an event"); return; }
     if (!passcode) { toast.error("Enter the staff passcode"); return; }
 
     setLoading(true);
@@ -42,8 +37,7 @@ const StaffSignIn = () => {
         return;
       }
 
-      const event = events?.find((e) => e.id === eventId);
-      signIn(name.trim(), eventId, event?.name ?? "");
+      signIn(name.trim());
       toast.success(`Welcome, ${name.trim()}! 🏁`);
     } catch {
       toast.error("Sign-in failed");
@@ -71,19 +65,6 @@ const StaffSignIn = () => {
             />
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Current Event</label>
-            <Select value={eventId} onValueChange={setEventId}>
-              <SelectTrigger className="h-12 text-lg">
-                <SelectValue placeholder="Select event..." />
-              </SelectTrigger>
-              <SelectContent>
-                {events?.map((e) => (
-                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
             <label className="text-sm text-muted-foreground mb-1 block">Staff Passcode</label>
             <Input
               type="password"
@@ -101,6 +82,9 @@ const StaffSignIn = () => {
           >
             {loading ? "Signing in..." : "🏁 SIGN IN"}
           </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            The active event is set by admin and applies to everyone.
+          </p>
         </CardContent>
       </Card>
     </div>
