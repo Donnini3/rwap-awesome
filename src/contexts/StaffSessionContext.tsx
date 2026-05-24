@@ -16,32 +16,42 @@ const StaffSessionContext = createContext<StaffSessionContextType | undefined>(u
 
 const STORAGE_KEY = "kir_staff_session";
 
+const readStoredSession = (): StaffSession | null => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    return parsed?.staffName ? { staffName: parsed.staffName } : null;
+  } catch {
+    return null;
+  }
+};
+
 export const StaffSessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<StaffSession | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, authSession) => {
-      if (!authSession) {
-        setSession(null);
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session: authSession } }) => {
       if (authSession) {
-        try {
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed?.staffName) setSession({ staffName: parsed.staffName });
-          }
-        } catch { /* ignore */ }
+        setSession(readStoredSession());
       } else {
+        setSession(null);
         localStorage.removeItem(STORAGE_KEY);
       }
       setAuthReady(true);
     });
+
+    supabase.auth.getSession()
+      .then(({ data: { session: authSession } }) => {
+        if (authSession) setSession(readStoredSession());
+        else localStorage.removeItem(STORAGE_KEY);
+      })
+      .catch(() => {
+        setSession(null);
+        localStorage.removeItem(STORAGE_KEY);
+      })
+      .finally(() => setAuthReady(true));
 
     return () => sub.subscription.unsubscribe();
   }, []);
