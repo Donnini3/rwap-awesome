@@ -60,8 +60,27 @@ const WaitingList = () => {
                     </TableCell>
                     <TableCell className="space-x-1 whitespace-nowrap">
                       {c.status === "waiting" && (
-                        <Button size="sm" variant="outline" onClick={() => updateCustomerStatus.mutate({ id: c.id, status: "booked" })}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title="Mark as booked (removes them from the Book a Ride list)"
+                          onClick={() => updateCustomerStatus.mutate({ id: c.id, status: "booked" }, {
+                            onSuccess: () => toast.success(`${c.first_name} marked as booked — no longer listed under Book a Ride`),
+                          })}
+                        >
                           ✅
+                        </Button>
+                      )}
+                      {c.status === "booked" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title="Move back to waiting (shows them in the Book a Ride list again)"
+                          onClick={() => updateCustomerStatus.mutate({ id: c.id, status: "waiting" }, {
+                            onSuccess: () => toast.success(`${c.first_name} is back on the waiting list`),
+                          })}
+                        >
+                          ↩️
                         </Button>
                       )}
                       <AlertDialog>
