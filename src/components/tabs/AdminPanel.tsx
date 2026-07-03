@@ -9,8 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { csvEscape, findColumn, isExcelBinary, isExcelFileName, parseCsv } from "@/lib/csv";
 
 const AdminPanel = () => {
   const { data: drivers, addDriver, deleteDriver } = useDrivers();
@@ -39,46 +44,90 @@ const AdminPanel = () => {
   };
 
   const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "drivers" | "customers") => {
-    const file = e.target.files?.[0];
+    const input = e.target;
+    const file = input.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    const lines = text.split("\n").filter(Boolean);
-    const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    input.value = "";
 
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",").map((c) => c.trim());
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (isExcelFileName(file.name) || isExcelBinary(bytes)) {
+        toast.error("Excel files can't be read directly. In Excel, use File → Save As → CSV, then upload that.");
+        return;
+      }
+
+      const rows = parseCsv(new TextDecoder("utf-8").decode(bytes));
+      if (rows.length < 2) {
+        toast.error("No data rows found — the file needs a header row plus at least one entry.");
+        return;
+      }
+      const headers = rows[0];
+
+      let imported = 0;
+      let skipped = 0;
+      let failed = 0;
+
       if (type === "drivers") {
-        const ni = headers.indexOf("name");
-        const ci = headers.indexOf("car");
-        if (ni >= 0 && ci >= 0 && cols[ni] && cols[ci]) {
-          await addDriver.mutateAsync({ name: cols[ni], car: cols[ci] });
+        const ni = findColumn(headers, "name", "driver", "driver name");
+        const ci = findColumn(headers, "car", "vehicle");
+        if (ni === -1 || ci === -1) {
+          toast.error(`Missing "Name" or "Car" column. Found columns: ${headers.join(", ")}`);
+          return;
+        }
+        for (const cols of rows.slice(1)) {
+          const name = cols[ni]?.trim();
+          const car = cols[ci]?.trim();
+          if (!name || !car) { skipped++; continue; }
+          try { await addDriver.mutateAsync({ name, car }); imported++; }
+          catch { failed++; }
         }
       } else {
-        const fi = headers.indexOf("first name") !== -1 ? headers.indexOf("first name") : headers.indexOf("firstname");
-        const li = headers.indexOf("last name") !== -1 ? headers.indexOf("last name") : headers.indexOf("lastname");
-        if (fi >= 0 && li >= 0 && cols[fi] && cols[li]) {
-          const pi = headers.indexOf("phone");
-          const ei = headers.indexOf("email");
-          const ai = headers.indexOf("age group") !== -1 ? headers.indexOf("age group") : headers.indexOf("agegroup");
-          await addCustomer.mutateAsync({
-            first_name: cols[fi], last_name: cols[li],
-            phone: pi >= 0 ? cols[pi] : "", email: ei >= 0 ? cols[ei] : "",
-            age_group: ai >= 0 ? cols[ai] : "18-25",
-          });
+        const fi = findColumn(headers, "first name", "firstname", "first");
+        const li = findColumn(headers, "last name", "lastname", "last", "surname");
+        if (fi === -1 || li === -1) {
+          toast.error(`Missing "First Name" or "Last Name" column. Found columns: ${headers.join(", ")}`);
+          return;
+        }
+        const pi = findColumn(headers, "phone", "mobile", "phone number");
+        const ei = findColumn(headers, "email", "email address");
+        const ai = findColumn(headers, "age group", "agegroup", "age");
+        for (const cols of rows.slice(1)) {
+          const first = cols[fi]?.trim();
+          const last = cols[li]?.trim();
+          if (!first || !last) { skipped++; continue; }
+          try {
+            await addCustomer.mutateAsync({
+              first_name: first, last_name: last,
+              phone: pi >= 0 ? cols[pi]?.trim() ?? "" : "",
+              email: ei >= 0 ? cols[ei]?.trim() ?? "" : "",
+              age_group: ai >= 0 && cols[ai]?.trim() ? cols[ai].trim() : "18-25",
+            });
+            imported++;
+          } catch { failed++; }
         }
       }
+
+      const detail = [skipped ? `${skipped} skipped (missing name)` : "", failed ? `${failed} failed to save` : ""].filter(Boolean).join(", ");
+      if (failed > 0) toast.error(`Imported ${imported} ${type}${detail ? ` — ${detail}` : ""}. Check your connection or sign in again, then retry.`);
+      else if (imported === 0) toast.error(`No ${type} imported${detail ? ` — ${detail}` : ""}.`);
+      else toast.success(`Imported ${imported} ${type}${detail ? ` (${detail})` : ""}.`);
+    } catch {
+      toast.error("Import failed — the file couldn't be read.");
     }
-    toast.success(`${type} imported!`);
-    e.target.value = "";
   };
 
   const exportRidesCSV = async () => {
-    const { data } = await supabase.from("rides").select("*, customers(*), drivers(*), events(*)").order("created_at");
+    const { data, error } = await supabase.from("rides").select("*, customers(*), drivers(*), events(*)").order("created_at");
+    if (error) { toast.error("Export failed — couldn't load rides"); return; }
     if (!data?.length) { toast.error("No rides to export"); return; }
     const csv = "Customer,Driver,Car,Event,Staff,Notes,Date\n" +
-      data.map(r => `"${r.customers?.first_name} ${r.customers?.last_name}","${r.drivers?.name}","${r.drivers?.car}","${r.events?.name}","${r.staff_name}","${r.notes}","${r.created_at}"`).join("\n");
+      data.map(r => [
+        `${r.customers?.first_name ?? ""} ${r.customers?.last_name ?? ""}`.trim(),
+        r.drivers?.name, r.drivers?.car, r.events?.name, r.staff_name, r.notes, r.created_at,
+      ].map(csvEscape).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "rides.csv"; a.click();
+    URL.revokeObjectURL(a.href);
   };
 
   return (
@@ -175,7 +224,30 @@ const AdminPanel = () => {
         <CardHeader><CardTitle>Data Management</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           <Button variant="outline" onClick={exportRidesCSV} className="w-full">📥 Export Rides CSV</Button>
-          <Button variant="destructive" onClick={() => { clearAllRides.mutate(); toast.success("Rides cleared"); }} className="w-full">🗑️ Clear All Rides</Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="w-full">🗑️ Clear All Rides</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete all rides?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes every logged ride across all events. Export the rides CSV first if you need a copy. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => clearAllRides.mutate(undefined, {
+                    onSuccess: () => toast.success("All rides cleared"),
+                    onError: () => toast.error("Failed to clear rides"),
+                  })}
+                >
+                  Delete all rides
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>
