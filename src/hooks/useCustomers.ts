@@ -30,7 +30,8 @@ export const useCustomers = () => {
 
   const addCustomer = useMutation({
     mutationFn: async (customer: { first_name: string; last_name: string; phone?: string; email?: string; age_group: string }) => {
-      const { error } = await supabase.from("customers").insert(customer);
+      // Explicit status so new customers always land on the Book a Ride waitlist
+      const { error } = await supabase.from("customers").insert({ ...customer, status: "waiting" });
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["customers"] }),

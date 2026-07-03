@@ -22,7 +22,7 @@ const JoinPage = () => {
       return;
     }
     const { error } = await supabase.from("customers").insert({
-      first_name: firstName, last_name: lastName, phone, email, age_group: ageGroup,
+      first_name: firstName, last_name: lastName, phone, email, age_group: ageGroup, status: "waiting",
     });
     if (error) { toast.error("Something went wrong"); return; }
     setSubmitted(true);
