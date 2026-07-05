@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { csvEscape, findColumn, isExcelBinary, isExcelFileName, parseCsv } from "@/lib/csv";
+import { parsePresaleWorkbook } from "@/lib/presale";
 
 const AdminPanel = () => {
   const { data: drivers, addDriver, deleteDriver } = useDrivers();
@@ -43,6 +44,50 @@ const AdminPanel = () => {
     });
   };
 
+  // Event workbook (.xlsx/.xlsm): drivers on row 2 from column C of the
+  // Pre-Sale sheet; customers below the NAME/PHONE header in columns A/B.
+  const handleExcelUpload = async (bytes: Uint8Array, type: "drivers" | "customers") => {
+    let data;
+    try {
+      data = parsePresaleWorkbook(bytes);
+    } catch {
+      toast.error("Couldn't read that Excel file. Expected the event workbook with a Pre-Sale sheet.");
+      return;
+    }
+
+    let imported = 0;
+    let failed = 0;
+
+    if (type === "drivers") {
+      if (data.drivers.length === 0) {
+        toast.error(`No drivers found in row 2 of the "${data.sheetName}" sheet.`);
+        return;
+      }
+      for (const name of data.drivers) {
+        try { await addDriver.mutateAsync({ name, car: "" }); imported++; }
+        catch { failed++; }
+      }
+      if (failed > 0) toast.error(`Imported ${imported} drivers from "${data.sheetName}" — ${failed} failed to save.`);
+      else toast.success(`Imported ${imported} drivers from "${data.sheetName}".`);
+    } else {
+      if (data.customers.length === 0) {
+        toast.error(`No customers found in column A of the "${data.sheetName}" sheet.`);
+        return;
+      }
+      for (const c of data.customers) {
+        try {
+          await addCustomer.mutateAsync({
+            first_name: c.first_name, last_name: c.last_name,
+            phone: c.phone, email: "", age_group: "18-25",
+          });
+          imported++;
+        } catch { failed++; }
+      }
+      if (failed > 0) toast.error(`Imported ${imported} customers from "${data.sheetName}" — ${failed} failed to save.`);
+      else toast.success(`Imported ${imported} customers from "${data.sheetName}".`);
+    }
+  };
+
   const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "drivers" | "customers") => {
     const input = e.target;
     const file = input.files?.[0];
@@ -52,7 +97,7 @@ const AdminPanel = () => {
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       if (isExcelFileName(file.name) || isExcelBinary(bytes)) {
-        toast.error("Excel files can't be read directly. In Excel, use File → Save As → CSV, then upload that.");
+        await handleExcelUpload(bytes, type);
         return;
       }
 
@@ -167,8 +212,8 @@ const AdminPanel = () => {
             <Button onClick={handleAddDriver} className="sm:w-auto">Add</Button>
           </div>
           <div>
-            <label className="text-sm text-muted-foreground">Import CSV (Name, Car columns)</label>
-            <Input type="file" accept=".csv" onChange={(e) => handleCSVUpload(e, "drivers")} />
+            <label className="text-sm text-muted-foreground">Import CSV (Name, Car) or event workbook (.xlsm — drivers from Pre-Sale row 2)</label>
+            <Input type="file" accept=".csv,.xlsx,.xlsm" onChange={(e) => handleCSVUpload(e, "drivers")} />
           </div>
           <div className="overflow-x-auto -mx-6 px-6">
             <Table>
@@ -214,8 +259,8 @@ const AdminPanel = () => {
       <Card className="border-border">
         <CardHeader><CardTitle>Import Customers</CardTitle></CardHeader>
         <CardContent>
-          <label className="text-sm text-muted-foreground">Upload CSV (First Name, Last Name, Phone, Email, Age Group)</label>
-          <Input type="file" accept=".csv" onChange={(e) => handleCSVUpload(e, "customers")} />
+          <label className="text-sm text-muted-foreground">Upload CSV (First Name, Last Name, Phone, Email, Age Group) or event workbook (.xlsm — presale names/phones from the Pre-Sale sheet)</label>
+          <Input type="file" accept=".csv,.xlsx,.xlsm" onChange={(e) => handleCSVUpload(e, "customers")} />
         </CardContent>
       </Card>
 
